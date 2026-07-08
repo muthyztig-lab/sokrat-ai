@@ -34,8 +34,8 @@ dev = ["pytest>=8.0", "pillow>=10.0"]
 sokrat = "sokrat.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/yourname/sokrat"
-Issues = "https://github.com/yourname/sokrat/issues"
+Homepage = "https://github.com/muthyztig-lab/sokrat"
+Issues = "https://github.com/muthyztig-lab/sokrat/issues"
 
 [tool.setuptools.packages.find]
 include = ["sokrat*"]

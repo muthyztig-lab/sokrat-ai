@@ -1,6 +1,6 @@
 # 🦉 Sokrat — a Socratic AI tutor **agent**
 
-[![CI](https://github.com/yourname/sokrat/actions/workflows/ci.yml/badge.svg)](https://github.com/yourname/sokrat/actions/workflows/ci.yml)
+[![CI](https://github.com/muthyztig-lab/sokrat/actions/workflows/ci.yml/badge.svg)](https://github.com/muthyztig-lab/sokrat/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
