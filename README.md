@@ -1,9 +1,17 @@
 # 🦉 Sokrat — a Socratic AI tutor **agent**
 
+[![CI](https://github.com/yourname/sokrat/actions/workflows/ci.yml/badge.svg)](https://github.com/yourname/sokrat/actions/workflows/ci.yml)
+[![Python](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+
 > An open-source, self-hostable AI tutor **agent** that teaches from *your own*
 > course materials, **remembers every learner**, guides with questions instead of
 > handing out answers, and writes the teacher a report — escalating to a human
 > when a student needs one.
+
+<p align="center"><img src="docs/demo.gif" alt="Sokrat demo" width="760"></p>
+
+📄 **Business one-pager (problem → ROI):** [docs/ONE_PAGER.md](docs/ONE_PAGER.md)
 
 Most "AI tutors" are a single prompt wrapped around ChatGPT. Sokrat is different
 in the ways that matter for a real online school:

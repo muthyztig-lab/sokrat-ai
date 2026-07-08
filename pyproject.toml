@@ -28,7 +28,7 @@ dependencies = [
 
 [project.optional-dependencies]
 pdf = ["pypdf>=4.0"]
-dev = ["pytest>=8.0"]
+dev = ["pytest>=8.0", "pillow>=10.0"]
 
 [project.scripts]
 sokrat = "sokrat.cli:main"
