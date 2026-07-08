@@ -1,0 +1,26 @@
+# Secrets
+.env
+
+# Sokrat runtime state (index, learner memory, cache, escalations)
+.sokrat/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+env/
+
+# Tooling
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/

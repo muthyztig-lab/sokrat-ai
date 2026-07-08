@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sokrat"
+version = "0.1.0"
+description = "An open-source, self-hostable Socratic AI tutor agent that teaches from your own materials, remembers every learner, and escalates to a human when needed."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Sokrat contributors" }]
+keywords = ["ai", "agent", "llm", "openai", "education", "tutor", "rag", "edtech"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Intended Audience :: Education",
+    "Topic :: Education",
+]
+dependencies = [
+    "openai>=1.40",
+    "pydantic>=2.6",
+    "numpy>=1.24",
+    "typer>=0.12",
+    "rich>=13.0",
+    "python-dotenv>=1.0",
+]
+
+[project.optional-dependencies]
+pdf = ["pypdf>=4.0"]
+dev = ["pytest>=8.0"]
+
+[project.scripts]
+sokrat = "sokrat.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/yourname/sokrat"
+Issues = "https://github.com/yourname/sokrat/issues"
+
+[tool.setuptools.packages.find]
+include = ["sokrat*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
