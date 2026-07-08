@@ -9,7 +9,7 @@
 > handing out answers, and writes the teacher a report — escalating to a human
 > when a student needs one.
 
-<p align="center"><img src="docs/demo.gif" alt="Sokrat demo" width="760"></p>
+<p align="center"><img src="docs/sokrat-demo.gif" alt="Sokrat demo" width="760"></p>
 
 📄 **Business one-pager (problem → ROI):** [docs/ONE_PAGER.md](docs/ONE_PAGER.md)
 

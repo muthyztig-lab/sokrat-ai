@@ -4,7 +4,7 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
 
-OUT = Path(__file__).resolve().parents[1] / "docs" / "demo.gif"
+OUT = Path(__file__).resolve().parents[1] / "docs" / "sokrat-demo.gif"
 
 BG = (13, 17, 23)
 BAR = (22, 27, 34)
