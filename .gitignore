@@ -1,8 +1,9 @@
 # Secrets
 .env
 
-# Local assistant/editor state — never publish
+# Local editor / tooling folders
 .claude/
+.cursor/
 
 # Sokrat runtime state (index, learner memory, cache, escalations)
 .sokrat/
