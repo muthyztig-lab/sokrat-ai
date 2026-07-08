@@ -1,6 +1,9 @@
 # Secrets
 .env
 
+# Local assistant/editor state — never publish
+.claude/
+
 # Sokrat runtime state (index, learner memory, cache, escalations)
 .sokrat/
 
