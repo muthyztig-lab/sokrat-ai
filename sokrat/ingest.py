@@ -1,9 +1,3 @@
-"""Load course materials from disk and split them into retrievable chunks.
-
-Supported formats: .txt, .md, .pdf (PDF needs `pypdf`). Everything else is
-skipped with a warning so one bad file never breaks an ingest run.
-"""
-
 from __future__ import annotations
 
 import re
@@ -15,14 +9,13 @@ TEXT_SUFFIXES = {".txt", ".md", ".markdown", ".rst"}
 
 
 def read_file(path: Path) -> str:
-    """Return the plain text of a single supported file (or '' if unsupported)."""
     suffix = path.suffix.lower()
     if suffix in TEXT_SUFFIXES:
         return path.read_text(encoding="utf-8", errors="ignore")
     if suffix == ".pdf":
         try:
             from pypdf import PdfReader
-        except ImportError as err:  # pragma: no cover - depends on optional dep
+        except ImportError as err:
             raise RuntimeError("Reading PDF files requires `pip install pypdf`.") from err
         reader = PdfReader(str(path))
         return "\n\n".join((page.extract_text() or "") for page in reader.pages)
@@ -30,11 +23,6 @@ def read_file(path: Path) -> str:
 
 
 def chunk_text(text: str, *, target_chars: int = 1100, overlap: int = 150) -> list[str]:
-    """Split text into overlapping chunks on paragraph boundaries.
-
-    Overlap keeps context from spilling across a hard cut, which improves
-    retrieval quality for questions that straddle two paragraphs.
-    """
     text = re.sub(r"\n{3,}", "\n\n", text.strip())
     if not text:
         return []
@@ -48,10 +36,8 @@ def chunk_text(text: str, *, target_chars: int = 1100, overlap: int = 150) -> li
         else:
             if current:
                 chunks.append(current)
-            # Carry a little overlap from the tail of the previous chunk.
             tail = current[-overlap:] if current else ""
             current = f"{tail}\n\n{para}".strip() if tail else para
-            # A single very long paragraph still needs hard splitting.
             while len(current) > target_chars * 1.5:
                 chunks.append(current[:target_chars])
                 current = current[target_chars - overlap :]
@@ -61,7 +47,6 @@ def chunk_text(text: str, *, target_chars: int = 1100, overlap: int = 150) -> li
 
 
 def ingest_path(path: str | Path) -> list[Chunk]:
-    """Walk a file or directory and return all chunks, tagged with their source."""
     root = Path(path)
     files: list[Path]
     if root.is_dir():

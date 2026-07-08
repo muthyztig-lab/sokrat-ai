@@ -1,15 +1,3 @@
-"""Production-minded wrapper around the OpenAI client.
-
-Handles the unglamorous things that make an agent trustworthy in production:
-  * structured outputs via strict JSON schema (Pydantic) — no manual parsing;
-  * embeddings for retrieval;
-  * a tool-calling chat entry point for the agent loop;
-  * automatic retries with backoff on transient errors;
-  * an on-disk cache for structured/embedding calls so batch runs over thousands
-    of learners never re-pay for identical calls;
-  * token + cost accounting so a run's cost is always visible.
-"""
-
 from __future__ import annotations
 
 import hashlib
@@ -27,13 +15,12 @@ T = TypeVar("T", bound=BaseModel)
 DEFAULT_MODEL = os.getenv("SOKRAT_MODEL", "gpt-4o-mini")
 EMBED_MODEL = os.getenv("SOKRAT_EMBED_MODEL", "text-embedding-3-small")
 
-# Approximate USD per 1M tokens. Override via env for your model / plan.
 PRICE_IN = float(os.getenv("SOKRAT_PRICE_IN", "0.15"))
 PRICE_OUT = float(os.getenv("SOKRAT_PRICE_OUT", "0.60"))
 
 
 class LLMRefusal(RuntimeError):
-    """Raised when the model refuses to answer (handled as a first-class error)."""
+    pass
 
 
 @dataclass
@@ -70,8 +57,6 @@ class LLMClient:
         use_cache: bool = True,
         max_retries: int = 4,
     ) -> None:
-        # Imported lazily so the package imports (and tests collect) without the
-        # SDK installed or an API key present.
         from openai import OpenAI
 
         self.client = OpenAI()
@@ -83,7 +68,6 @@ class LLMClient:
         if self.use_cache:
             self.cache_dir.mkdir(parents=True, exist_ok=True)
 
-    # -- caching ----------------------------------------------------------
     def _key(self, *parts: Any) -> str:
         payload = json.dumps(parts, sort_keys=True, ensure_ascii=False, default=str)
         return hashlib.sha256(payload.encode("utf-8")).hexdigest()[:24]
@@ -98,16 +82,14 @@ class LLMClient:
                 return fn()
             except LLMRefusal:
                 raise
-            except Exception as err:  # rate limit / timeout / 5xx
+            except Exception as err:
                 last_err = err
                 if attempt == self.max_retries - 1:
                     break
                 time.sleep(2**attempt)
         raise RuntimeError(f"OpenAI call failed after {self.max_retries} tries: {last_err}")
 
-    # -- structured output ------------------------------------------------
     def parse(self, *, system: str, user: str, schema: Type[T], temperature: float = 0.3) -> T:
-        """Return an instance of `schema`, produced with strict structured output."""
         key = self._key("parse", self.model, schema.__name__, system, user, temperature)
         if self.use_cache and (p := self._cache_path(key)).exists():
             self.usage.cache_hits += 1
@@ -130,16 +112,14 @@ class LLMClient:
             if completion.usage:
                 self.usage.prompt_tokens += completion.usage.prompt_tokens
                 self.usage.completion_tokens += completion.usage.completion_tokens
-            return msg.parsed  # type: ignore[return-value]
+            return msg.parsed
 
         result = self._retry(_do)
         if self.use_cache:
             self._cache_path(key).write_text(result.model_dump_json(indent=2), encoding="utf-8")
         return result
 
-    # -- embeddings -------------------------------------------------------
     def embed(self, texts: list[str]) -> list[list[float]]:
-        """Embed a batch of texts (cached per text)."""
         vectors: list[list[float] | None] = [None] * len(texts)
         to_fetch: list[int] = []
         for i, text in enumerate(texts):
@@ -167,9 +147,8 @@ class LLMClient:
                     self._cache_path(key).write_text(
                         json.dumps(item.embedding), encoding="utf-8"
                     )
-        return [v for v in vectors if v is not None]  # type: ignore[misc]
+        return [v for v in vectors if v is not None]
 
-    # -- tool-calling chat (the agent's engine) ---------------------------
     def chat(
         self,
         messages: list[dict[str, Any]],
@@ -177,11 +156,6 @@ class LLMClient:
         tools: list[dict[str, Any]] | None = None,
         temperature: float = 0.4,
     ):
-        """One turn of a tool-calling conversation. Returns the raw message object.
-
-        Not cached — the agent loop is stateful and each turn is unique.
-        """
-
         def _do():
             kwargs: dict[str, Any] = {
                 "model": self.model,

@@ -1,10 +1,3 @@
-"""Persistent per-learner memory.
-
-Each student gets one JSON file. It's intentionally simple and human-readable —
-a teacher can open it, and swapping it for a database later means changing only
-this file. This is what lets the tutor pick up where it left off and adapt.
-"""
-
 from __future__ import annotations
 
 from pathlib import Path
@@ -46,10 +39,9 @@ class LearnerMemory:
         struggling: list[str] | None = None,
         note: str = "",
     ) -> LearnerProfile:
-        """Merge new observations, de-duplicating and resolving mastered vs. struggling."""
         for topic in mastered or []:
             _add(profile.mastered_topics, topic)
-            _remove(profile.struggling_topics, topic)  # promoted out of struggling
+            _remove(profile.struggling_topics, topic)
         for topic in struggling or []:
             if topic.lower() not in {t.lower() for t in profile.mastered_topics}:
                 _add(profile.struggling_topics, topic)

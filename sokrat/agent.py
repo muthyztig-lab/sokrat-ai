@@ -1,12 +1,3 @@
-"""The Socratic tutor agent — an OpenAI tool-calling loop with a strong pedagogy
-prompt, grounded retrieval, and persistent learner memory.
-
-The agent decides, each turn, whether to search the material, generate practice,
-grade an answer, remember something about the learner, or escalate — then answers
-the student. It teaches Socratically: it guides with questions and hints, and
-only reveals a full answer after the student has genuinely tried.
-"""
-
 from __future__ import annotations
 
 import json
@@ -80,7 +71,6 @@ class TutorAgent:
         return self.toolbox.escalated
 
     def reply(self, user_message: str) -> str:
-        """Run one full turn (including any tool calls) and return the reply text."""
         self.messages.append({"role": "user", "content": user_message})
         self.transcript.append({"role": "student", "text": user_message})
 
@@ -112,7 +102,6 @@ class TutorAgent:
 
 
 def _assistant_entry(message) -> dict[str, Any]:
-    """Convert an SDK assistant message into a plain dict safe to send back."""
     entry: dict[str, Any] = {"role": "assistant", "content": message.content or ""}
     if message.tool_calls:
         entry["tool_calls"] = [

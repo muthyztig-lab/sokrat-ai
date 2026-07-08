@@ -1,8 +1,3 @@
-"""Command-line interface: `sokrat ingest`, `sokrat chat`, `sokrat report`.
-
-Run `sokrat --help` for everything.
-"""
-
 from __future__ import annotations
 
 import os
@@ -40,7 +35,6 @@ def _require_key() -> None:
 
 @app.command()
 def version() -> None:
-    """Print the version."""
     console.print(f"Sokrat {__version__}")
 
 
@@ -48,7 +42,6 @@ def version() -> None:
 def ingest(
     path: str = typer.Argument(..., help="File or folder with course materials."),
 ) -> None:
-    """Index course materials so the tutor can teach (and cite) from them."""
     _require_key()
     llm = LLMClient()
     console.print(f"[cyan]Ingesting[/] {path} …")
@@ -67,7 +60,6 @@ def chat(
     course: str = typer.Option("this course", "--course", "-c", help="Course name."),
     language: str = typer.Option("Ukrainian", "--lang", help="Reply language."),
 ) -> None:
-    """Start an interactive Socratic tutoring session (type /exit to finish)."""
     _require_key()
     llm = LLMClient()
     try:
@@ -117,7 +109,6 @@ def chat(
         console.print("[bold blue]sokrat ›[/]")
         console.print(Markdown(reply))
 
-    # Wrap up: generate the teacher report and persist the session.
     if agent.transcript:
         console.print("\n[dim]Generating session report…[/]")
         _print_report(agent, llm, language)

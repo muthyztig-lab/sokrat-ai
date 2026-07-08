@@ -1,12 +1,3 @@
-"""A tiny, dependency-light vector store for grounded retrieval.
-
-Embeddings are stored as a local .npy matrix plus a chunks.json sidecar — no
-external vector database needed, which keeps Sokrat trivially self-hostable. For
-a course of a few hundred pages this is fast and exact (brute-force cosine).
-The interface is deliberately swappable: point `Retriever` at pgvector/Qdrant
-later and nothing else in the codebase changes.
-"""
-
 from __future__ import annotations
 
 import json
@@ -24,10 +15,9 @@ INDEX_DIR = Path(".sokrat/index")
 class Retriever:
     def __init__(self, chunks: list[Chunk], matrix: np.ndarray, llm: LLMClient) -> None:
         self.chunks = chunks
-        self.matrix = matrix  # shape (n_chunks, dim), L2-normalized
+        self.matrix = matrix
         self.llm = llm
 
-    # -- building & persistence ------------------------------------------
     @classmethod
     def build(cls, source_path: str, llm: LLMClient) -> "Retriever":
         chunks = ingest_path(source_path)
@@ -57,10 +47,9 @@ class Retriever:
         chunks = [Chunk(**c) for c in json.loads((d / "chunks.json").read_text("utf-8"))]
         return cls(chunks, matrix, llm)
 
-    # -- search -----------------------------------------------------------
     def search(self, query: str, k: int = 4) -> list[tuple[Chunk, float]]:
         q = _normalize(np.array(self.llm.embed([query])[0], dtype=np.float32)[None, :])[0]
-        scores = self.matrix @ q  # cosine similarity (both normalized)
+        scores = self.matrix @ q
         top = np.argsort(-scores)[:k]
         return [(self.chunks[i], float(scores[i])) for i in top]
 

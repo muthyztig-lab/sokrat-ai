@@ -1,9 +1,3 @@
-"""Offline unit tests — no API key or network needed.
-
-They cover the deterministic logic that the agent relies on: chunking,
-learner-memory merge rules, and cosine retrieval.
-"""
-
 import numpy as np
 
 from sokrat.ingest import chunk_text
@@ -17,7 +11,6 @@ def test_chunk_text_respects_size_and_covers_all_text():
     chunks = chunk_text(text, target_chars=400, overlap=50)
     assert len(chunks) > 1
     assert all(len(c) <= 400 * 1.5 for c in chunks)
-    # every paragraph index shows up somewhere
     joined = "\n".join(chunks)
     assert "Параграф номер 0" in joined and "Параграф номер 19" in joined
 
@@ -30,7 +23,7 @@ def test_memory_promotes_topic_out_of_struggling(tmp_path):
 
     mem.update(profile, mastered=["складні відсотки"])
     assert "складні відсотки" in profile.mastered_topics
-    assert "складні відсотки" not in profile.struggling_topics  # promoted out
+    assert "складні відсотки" not in profile.struggling_topics
 
 
 def test_memory_deduplicates_case_insensitively(tmp_path):
@@ -50,8 +43,6 @@ def test_memory_persists_between_loads(tmp_path):
 
 
 class _FakeLLM:
-    """Deterministic 'embeddings' so retrieval can be tested without the API."""
-
     _vocab = {"борг": 0, "відсоток": 1, "бюджет": 2, "ризик": 3}
 
     def embed(self, texts):
@@ -72,10 +63,9 @@ def test_retriever_ranks_relevant_chunk_first():
         Chunk(id=2, source="c.md", text="Ризик і диверсифікація ризик ризик"),
     ]
     vectors = np.array(llm.embed([c.text for c in chunks]), dtype=np.float32)
-    # normalize the way Retriever.build does
     from sokrat.retrieval import _normalize
 
-    retriever = Retriever(chunks, _normalize(vectors), llm)  # type: ignore[arg-type]
+    retriever = Retriever(chunks, _normalize(vectors), llm)
     top_chunk, score = retriever.search("як гасити борг з високим відсотком", k=1)[0]
     assert top_chunk.id == 1
     assert score > 0

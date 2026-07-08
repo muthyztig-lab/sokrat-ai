@@ -1,12 +1,3 @@
-"""Наочне демо БЕЗ ключа OpenAI і без інтернету.
-
-Логіка агента — справжня (той самий цикл, памʼять, звіт). «Несправжній» тут лише
-сам AI: замість реальної моделі підставлені заготовлені відповіді, щоб було видно
-весь потік роботи.
-
-Запуск:  python examples/demo_offline.py
-"""
-
 from __future__ import annotations
 
 import sys
@@ -40,17 +31,13 @@ def _call(cid, name, args):
 
 
 class DemoLLM:
-    """Підставний AI: заготовлені ходи розмови + детерміновані «ембединги»."""
-
     def __init__(self):
         self.usage = SimpleNamespace(summary=lambda: "демо-режим (0 витрат)")
         self._chat_turns = [
-            # Студент: «поясни складні відсотки»
-            _call_turn := _msg(tool_calls=[_call("c1", "search_materials",
-                                                  '{"query": "складні відсотки"}')]),
+            _msg(tool_calls=[_call("c1", "search_materials",
+                                   '{"query": "складні відсотки"}')]),
             _msg(content="Гарне питання! Спершу подумай сам 🤔 — чому, на твою думку, "
                          "вклад росте з часом **усе швидше**, а не рівномірно?"),
-            # Студент відповідає правильно
             _msg(tool_calls=[_call("c2", "update_learner_memory",
                                    '{"mastered": ["складні відсотки"], '
                                    '"note": "сам вивів ідею нарахування на відсотки"}')]),
@@ -72,7 +59,6 @@ class DemoLLM:
         return out
 
     def parse(self, *, system, user, schema, temperature=0.3):
-        # У цьому демо parse потрібен лише для фінального звіту.
         if schema is SessionReport:
             return SessionReport(
                 learner="Олена",
@@ -107,14 +93,12 @@ def main() -> None:
 
     llm = DemoLLM()
 
-    # 1. «Даємо підручник»: читаємо приклад курсу і будуємо памʼять для пошуку.
     course = Path(__file__).resolve().parent / "course"
     chunks = ingest_path(course)
     console.print(f"[green]1.[/] Прочитано матеріали курсу → [bold]{len(chunks)}[/] шматків тексту.")
     vectors = np.array(llm.embed([c.text for c in chunks]), dtype=np.float32)
     retriever = Retriever(chunks, _normalize(vectors), llm)
 
-    # 2. Заводимо учня з памʼяттю.
     memory = LearnerMemory(".sokrat/learners")
     profile = memory.load("olena_demo", name="Олена")
     console.print(f"[green]2.[/] Завантажено профіль учня: [cyan]{profile.name}[/] "
@@ -130,11 +114,9 @@ def main() -> None:
     run_turn(agent, "поясни складні відсотки")
     run_turn(agent, "бо відсотки додаються до суми, і на них теж потім капають відсотки")
 
-    # 3. Що агент запамʼятав про учня.
     console.print(Rule("[bold]Памʼять про учня (збережеться між сесіями)[/]"))
     console.print(Panel(profile.as_context(), border_style="magenta"))
 
-    # 4. Авто-звіт для викладача.
     from sokrat.report import build_report
 
     report = build_report(agent, llm)

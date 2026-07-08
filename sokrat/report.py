@@ -1,9 +1,3 @@
-"""Turn a finished tutoring session into a teacher-facing report.
-
-This is the automation payoff: a curator can skim one card per student instead
-of reading thousands of transcripts, and instantly see who needs a human.
-"""
-
 from __future__ import annotations
 
 from .agent import TutorAgent

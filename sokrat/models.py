@@ -1,9 +1,3 @@
-"""Pydantic schemas — the single source of truth for every structured LLM call.
-
-We use OpenAI Structured Outputs (strict JSON schema) against these models, so
-responses always have the shape we expect and we never hand-parse JSON.
-"""
-
 from __future__ import annotations
 
 from datetime import datetime, timezone
@@ -18,12 +12,7 @@ def _now() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
 
 
-# --- Retrieval -------------------------------------------------------------
-
-
 class Chunk(BaseModel):
-    """A retrievable slice of the course material."""
-
     id: int
     source: str = Field(description="File the chunk came from.")
     text: str
@@ -34,12 +23,7 @@ class Citation(BaseModel):
     quote: str
 
 
-# --- Practice generation ---------------------------------------------------
-
-
 class PracticeQuestion(BaseModel):
-    """A single practice question grounded in the course material."""
-
     question: str
     options: list[str] = Field(description="Exactly 4 options for a multiple-choice item.")
     correct_index: int = Field(ge=0, le=3, description="0-based index of the correct option.")
@@ -55,12 +39,7 @@ class PracticeSet(BaseModel):
     questions: list[PracticeQuestion]
 
 
-# --- Answer grading --------------------------------------------------------
-
-
 class GradingResult(BaseModel):
-    """Rubric-based grading of a student's free-text answer."""
-
     score: int = Field(ge=0, le=100)
     verdict: Literal["correct", "partially_correct", "incorrect"]
     strengths: list[str]
@@ -68,12 +47,7 @@ class GradingResult(BaseModel):
     feedback: str = Field(description="Warm, constructive, student-facing feedback.")
 
 
-# --- Learner memory --------------------------------------------------------
-
-
 class LearnerProfile(BaseModel):
-    """Everything the tutor remembers about one student, persisted between sessions."""
-
     learner_id: str
     name: str = ""
     mastered_topics: list[str] = Field(default_factory=list)
@@ -84,7 +58,6 @@ class LearnerProfile(BaseModel):
     last_seen: str = Field(default_factory=_now)
 
     def as_context(self) -> str:
-        """A compact, human-readable snapshot the agent can read at the top of a session."""
         if not (self.mastered_topics or self.struggling_topics or self.notes):
             return "This is a new learner — no history yet."
         parts = [f"Learner: {self.name or self.learner_id} (session #{self.sessions + 1})"]
@@ -97,12 +70,7 @@ class LearnerProfile(BaseModel):
         return "\n".join(parts)
 
 
-# --- Teacher-facing session report ----------------------------------------
-
-
 class SessionReport(BaseModel):
-    """Auto-generated summary a teacher can skim in 20 seconds."""
-
     learner: str
     summary: str = Field(description="What happened this session, in 2-4 sentences.")
     topics_covered: list[str]

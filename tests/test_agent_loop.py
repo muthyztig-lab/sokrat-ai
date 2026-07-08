@@ -1,9 +1,3 @@
-"""Verify the agent's tool-calling loop end-to-end with a fake LLM (no network).
-
-This proves the wiring: the agent issues a tool call, the tool runs, the result
-is fed back, and the agent produces a final grounded answer.
-"""
-
 from types import SimpleNamespace
 
 import numpy as np
@@ -25,8 +19,6 @@ def _tool_call(call_id, name, arguments):
 
 
 class ScriptedLLM:
-    """Returns a pre-scripted sequence of chat turns; embeds deterministically."""
-
     def __init__(self, turns):
         self._turns = list(turns)
         self.usage = SimpleNamespace(summary=lambda: "fake")
@@ -44,13 +36,11 @@ def test_agent_calls_tool_then_answers(tmp_path):
 
     llm = ScriptedLLM(
         turns=[
-            # 1st turn: the agent decides to search the materials
             _msg(tool_calls=[_tool_call("c1", "search_materials", '{"query": "складні відсотки"}')]),
-            # 2nd turn: with the tool result in context, it answers
             _msg(content="Добре питання! Спробуй сам: чому вклад росте швидше з часом?"),
         ]
     )
-    retriever = Retriever(chunks, _normalize(vectors), llm)  # type: ignore[arg-type]
+    retriever = Retriever(chunks, _normalize(vectors), llm)
     memory = LearnerMemory(tmp_path / "learners")
     profile = memory.load("stud")
 
@@ -59,13 +49,12 @@ def test_agent_calls_tool_then_answers(tmp_path):
         retriever=retriever,
         memory=memory,
         profile=profile,
-        llm=llm,  # type: ignore[arg-type]
+        llm=llm,
     )
 
     reply = agent.reply("поясни складні відсотки")
 
     assert "Спробуй сам" in reply
-    # transcript recorded both sides; tool round-trip happened (3+ assistant/tool msgs)
     assert agent.transcript[0]["role"] == "student"
     assert agent.transcript[-1]["role"] == "tutor"
     assert any(m.get("role") == "tool" for m in agent.messages)

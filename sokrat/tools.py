@@ -1,14 +1,3 @@
-"""The tools the agent can call.
-
-This is what makes Sokrat an *agent* rather than a chatbot: the model decides,
-turn by turn, whether to search the material, generate practice, grade an
-answer, update what it remembers about the learner, or escalate to a human — and
-it sees the result before it replies.
-
-`Toolbox` owns the wiring; `schemas` is the OpenAI function-calling spec and
-`call()` dispatches a single tool call and returns a string for the model.
-"""
-
 from __future__ import annotations
 
 import json
@@ -38,7 +27,6 @@ class Toolbox:
         self.llm = llm
         self.escalated = False
 
-    # -- OpenAI tool specs ------------------------------------------------
     @property
     def schemas(self) -> list[dict[str, Any]]:
         return [
@@ -98,7 +86,6 @@ class Toolbox:
             ),
         ]
 
-    # -- dispatch ---------------------------------------------------------
     def call(self, name: str, args: dict[str, Any]) -> str:
         handler = getattr(self, f"_tool_{name}", None)
         if handler is None:
@@ -108,7 +95,6 @@ class Toolbox:
         except TypeError as err:
             return f"ERROR calling {name}: {err}"
 
-    # -- implementations --------------------------------------------------
     def _tool_search_materials(self, query: str, k: int = 4) -> str:
         hits = self.retriever.search(query, k=k)
         if not hits:
